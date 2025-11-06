@@ -1,0 +1,9 @@
+ProyectoSuperMario/
+│
+├─ main.py                  # Archivo principal donde se ejecuta el juego
+├─ juego.py                 # Clase Juego (coordina todo)
+├─ personajes.py            # Clase Personaje, Mario y Luigi
+├─ cinta.py                 # Clase Cinta
+├─ paquete.py               # Clase Paquete
+├─ camion.py                # Clase Camion
+└─ constantes.py            # Colores, tamaños, velocidades, etc.
