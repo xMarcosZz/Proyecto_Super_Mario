@@ -1,16 +1,22 @@
-import pyxel
-
 class Personaje:
-    def __init__(self, nombre, x, y, u, v):
+    """
+    Clase base para todos los personajes (Mario y Luigi).
+    Contendrá su posición, piso actual y métodos comunes.
+    """
+    def __init__(self, nombre, x, y):
         self.nombre = nombre
         self.x = x
         self.y = y
-        self.u = u
-        self.v = v
+        self.piso = 0  # Piso inicial
 
     def dibujar(self):
-        pyxel.blt(self.x, self.y, 0, self.u, self.v, 16, 16)
+        """Dibuja el personaje en pantalla (se implementará más adelante con Pyxel)."""
+        pass
 
+    def mover_arriba(self):
+        """Sube un piso (más adelante verificaremos límites)."""
+        pass
 
-mario = Personaje("Mario", 120, 100, 0, 0)
-luigi = Personaje("Luigi", 120, 100, 16, 0)
+    def mover_abajo(self):
+        """Baja un piso."""
+        pass
