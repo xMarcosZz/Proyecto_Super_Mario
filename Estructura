@@ -7,3 +7,11 @@ ProyectoSuperMario/
 ├─ paquete.py               # Clase Paquete
 ├─ camion.py                # Clase Camion
 └─ constantes.py            # Colores, tamaños, velocidades, etc.
+
+┌───────────────────────────── pantalla ─────────────────────────────┐
+│                                                                    │
+│   (20,100) Luigi                      (120,100) Mario              │
+│        ↑                                  ↑                       │
+│        |                                  |                       │
+│   u=16,v=0  ← desde el archivo .pyxres →  u=0,v=0                 │
+└────────────────────────────────────────────────────────────────────┘
