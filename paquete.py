@@ -1,3 +1,4 @@
+import pyxel
 class Paquete:
     """
     Representa un paquete (caja) que se moverá por las cintas.
@@ -8,5 +9,5 @@ class Paquete:
         self.activo = True  # Si se ha caído o entregado, será False
 
     def dibujar(self):
-        """Dibuja el paquete en su posición actual."""
-        pass
+        if self.activo:
+            pyxel.rect(self.x, self.y, 8, 8, 4)

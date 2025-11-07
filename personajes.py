@@ -1,3 +1,4 @@
+import pyxel
 class Personaje:
     """
     Clase base para todos los personajes (Mario y Luigi).
@@ -10,8 +11,11 @@ class Personaje:
         self.piso = 0  # Piso inicial
 
     def dibujar(self):
-        """Dibuja el personaje en pantalla (se implementará más adelante con Pyxel)."""
-        pass
+        # Según el nombre elegimos el sprite
+        if self.nombre.lower() == "luigi":
+            pyxel.blt(self.x, self.y, 0, 0, 0, 16, 16, 0)
+        else:
+            pyxel.blt(self.x, self.y, 0, 16, 0, 16, 16, 0)
 
     def mover_arriba(self):
         """Sube un piso (más adelante verificaremos límites)."""

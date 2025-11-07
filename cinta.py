@@ -1,3 +1,4 @@
+import pyxel
 class Cinta:
     """
     Representa una cinta transportadora.
@@ -11,5 +12,4 @@ class Cinta:
         self.paquetes = []  # Lista de paquetes sobre la cinta
 
     def dibujar(self):
-        """Dibuja la cinta (gráfico simple por ahora)."""
-        pass
+        pyxel.rect(self.x, self.y, self.longitud, 4, 11)
