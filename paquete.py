@@ -10,4 +10,4 @@ class Paquete:
 
     def dibujar(self):
         if self.activo:
-            pyxel.rect(self.x, self.y, 8, 8, 4)
+            pass
