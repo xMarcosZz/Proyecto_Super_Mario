@@ -1,8 +1,7 @@
 import pyxel
-from juego import Juego
+from Juego import Juego
 
 if __name__ == "__main__":
-    # Tamaño 256x192 (clásico Pyxel)
-    pyxel.init(256, 192, title="Proyecto Mario Bros")
+    pyxel.init(256, 128)
     juego = Juego()
     pyxel.run(juego.update, juego.draw)

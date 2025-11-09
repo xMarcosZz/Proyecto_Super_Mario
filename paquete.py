@@ -1,8 +1,6 @@
 import pyxel
 class Paquete:
-    """
-    Representa un paquete (caja) que se moverá por las cintas.
-    """
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -10,4 +8,4 @@ class Paquete:
 
     def dibujar(self):
         if self.activo:
-            pass
+            pyxel.blt(self.x,self.y,0,32,8,8,8,7)
