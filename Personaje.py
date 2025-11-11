@@ -1,20 +1,39 @@
-import pyxel
-
 class Personaje:
-    def __init__(self,nombre,x,y):
-        self.nombre=nombre
-        self.x=x
-        self.y=y
-        self.piso=0
+    def __init__(self, nombre: str, x: int, y: int):
+        self.nombre = nombre
+        self.x = x  # Usa el setter con validación
+        self.y = y  # Usa el setter con validación
+
+        self.sprite_luigi = (0, 16, 0, 16, 16, 7)
+        self.sprite_mario = (0, 0, 0, 16, 16, 7)
+
+    # Propiedad y setter para X
+    @property
+    def x(self) -> int:
+        return self.__x
+
+    @x.setter
+    def x(self, x: int):
+        if not isinstance(x, int):
+            raise TypeError("La coordenada X debe ser un número entero")
+        elif x < 0:
+            raise ValueError("La coordenada X debe ser un número no negativo")
+        else:
+            self.__x = x
+
+    # Propiedad y setter para Y
+    @property
+    def y(self) -> int:
+        return self.__y
+
+    @y.setter
+    def y(self, y: int):
+        if not isinstance(y, int):
+            raise TypeError("La coordenada Y debe ser un número entero")
+        elif y < 0:
+            raise ValueError("La coordenada Y debe ser un número no negativo")
+        else:
+            self.__y = y
+
     def update(self):
         pass
-    def dibujar(self):
-     # Si el nombre es Luigi (izquierda, azul)
-        if self.nombre.lower() == "luigi":
-            # Luigi está a la izquierda → debe mirar hacia la derecha
-            pyxel.blt(self.x, self.y, 0, 16, 0, 16, 16, 7)
-        else:
-            # Mario (derecha, morado) → debe mirar hacia la izquierda
-            pyxel.blt(self.x, self.y, 0, 0, 0, 16, 16, 7)
-
-
