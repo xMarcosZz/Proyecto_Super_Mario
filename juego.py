@@ -28,6 +28,11 @@ class Juego:
         self.camion = Camion(1 * 8, 8 * 8)
         #self.jefe = Jefe(10 * 8, 5 * 8)
 
+        # Coordenadas Y de los pisos (de abajo a arriba)
+        self.pisos = [13*8, 8*8, 4*8]
+        self.luigi.pisos = self.pisos
+        self.mario.pisos = self.pisos
+
     # ---------------- MÉTODOS PRINCIPALES ---------------- #
 
     def update(self):
@@ -35,13 +40,30 @@ class Juego:
         Este método se ejecuta en cada fotograma del juego (loop principal).
         Aquí se actualiza toda la lógica: movimiento, colisiones, puntuación, etc.
         """
-        # Ejemplo: salir del juego con la tecla Q
-        if pyxel.btnp(pyxel.KEY_Q):
+        # Salir del juego con la tecla Q
+        if pyxel.btnp(pyxel.KEY_ESCAPE):
             pyxel.quit()
 
-        # En el futuro aquí se podrá incluir movimiento, colisiones, etc.
-        # self.mario.mover()
-        # self.paquete.update()
+        #--Mario controles--
+        if pyxel.btnp(pyxel.KEY_UP):
+            print("Mario: subir")
+            self.mario.mover_arriba()
+
+        if pyxel.btnp(pyxel.KEY_DOWN):
+            print("Mario: bajar")
+            self.mario.mover_abajo()
+        #--Luigi controles--
+        if pyxel.btnp(pyxel.KEY_W):
+            print("Luigi: subir")
+            self.luigi.mover_arriba()
+        if pyxel.btnp(pyxel.KEY_S):
+            print("Luigi: bajar")
+            self.luigi.mover_abajo()
+
+
+
+
+        #self.paquete.update()
         pass
 
     def draw(self):
