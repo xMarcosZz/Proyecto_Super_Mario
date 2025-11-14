@@ -3,7 +3,7 @@ class Camion:
         self.x = x  # Usa los setters con validación
         self.y = y
         self.carga = 0  # Paquetes entregados
-        self.sprite_camion = (0, 16, 32, 24, 16)
+        self.sprite_camion = (0, 16, 32, 24, 16,7)
 
     # Propiedad y setter para X
     @property

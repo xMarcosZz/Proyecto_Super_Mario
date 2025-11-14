@@ -7,6 +7,8 @@ class Personaje:
         self.sprite_luigi = (0, 16, 0, 16, 16, 7)
         self.sprite_mario = (0, 0, 0, 16, 16, 7)
         self.piso = 0
+        self.pisos = None
+
 
     # Propiedad y setter para X
     @property

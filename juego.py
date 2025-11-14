@@ -26,7 +26,7 @@ class Juego:
         self.luigi = Personaje("Luigi", 6 * 8, 13 * 8)
         self.paquete = Paquete(26 * 8, 13 * 8)
         self.camion = Camion(1 * 8, 8 * 8)
-        #self.jefe = Jefe(10 * 8, 5 * 8)
+        self.jefe = Jefe(29 * 8, 12 * 8)
 
         # Coordenadas Y de los pisos (de abajo a arriba)
         self.pisos = [13*8, 8*8, 4*8]
@@ -44,22 +44,7 @@ class Juego:
         if pyxel.btnp(pyxel.KEY_ESCAPE):
             pyxel.quit()
 
-        #--Mario controles--
-        if pyxel.btnp(pyxel.KEY_UP):
-            print("Mario: subir")
-            self.mario.mover_arriba()
-
-        if pyxel.btnp(pyxel.KEY_DOWN):
-            print("Mario: bajar")
-            self.mario.mover_abajo()
-        #--Luigi controles--
-        if pyxel.btnp(pyxel.KEY_W):
-            print("Luigi: subir")
-            self.luigi.mover_arriba()
-        if pyxel.btnp(pyxel.KEY_S):
-            print("Luigi: bajar")
-            self.luigi.mover_abajo()
-
+        self.actualizar_personajes()
 
 
 
@@ -88,3 +73,24 @@ class Juego:
         pyxel.blt(self.luigi.x, self.luigi.y, *self.luigi.sprite_luigi)
         pyxel.blt(self.mario.x, self.mario.y, *self.mario.sprite_mario)
         pyxel.blt(self.paquete.x,  self.paquete.y, *self.paquete.sprite_paquete)
+        if not self.jefe.visible:
+            return
+        pyxel.blt(self.jefe.x, self.jefe.y, *self.jefe.sprite_jefe)
+
+
+    def actualizar_personajes(self):
+        #--Mario controles--
+        if pyxel.btnp(pyxel.KEY_UP):
+            print("Mario: subir")
+            self.mario.mover_arriba()
+
+        if pyxel.btnp(pyxel.KEY_DOWN):
+            print("Mario: bajar")
+            self.mario.mover_abajo()
+        #--Luigi controles--
+        if pyxel.btnp(pyxel.KEY_W):
+            print("Luigi: subir")
+            self.luigi.mover_arriba()
+        if pyxel.btnp(pyxel.KEY_S):
+            print("Luigi: bajar")
+            self.luigi.mover_abajo()

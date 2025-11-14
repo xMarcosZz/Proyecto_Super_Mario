@@ -1,10 +1,16 @@
 class Jefe:
+    """
+    Representa al jefe que lanza los paquetes desde la parte superior.
+    En el Sprint 2 solo se muestra en pantalla.
+    """
+
     def __init__(self, x: int, y: int):
-        self.x = x   # Usa el setter con validación
+        self.x = x  # Usa el setter con validación
         self.y = y
         self.visible = True
+        self.sprite_jefe = (0, 40, 32, -16, 16, 7)
 
-    # Propiedad y setter para X
+
     @property
     def x(self) -> int:
         return self.__x
@@ -18,7 +24,6 @@ class Jefe:
         else:
             self.__x = x
 
-    # Propiedad y setter para Y
     @property
     def y(self) -> int:
         return self.__y
@@ -32,14 +37,14 @@ class Jefe:
         else:
             self.__y = y
 
+    # --------- VISIBILIDAD ---------
     def aparecer(self):
-        """Hace visible al jefe en pantalla."""
         self.visible = True
 
     def desaparecer(self):
-        """Oculta al jefe (por ejemplo, al ser derrotado)."""
         self.visible = False
 
     def update(self):
-        """Actualiza el comportamiento o animación del jefe."""
         pass
+
+
