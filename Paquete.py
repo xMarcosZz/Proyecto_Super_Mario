@@ -47,8 +47,8 @@ class Paquete:
     CAMION_Y = 5   # y en tiles
 
     # Velocidades
-    VX = 0.3
-    VY_CAIDA = 0.5
+    VX = 2.5
+    VY_CAIDA = 1
 
     def __init__(self, x, y):
         # Posición en píxeles
@@ -294,7 +294,19 @@ class Paquete:
 
             # Cuando llega a la altura del camión se considera entregado
             if self.y >= self.CAMION_Y * 8:
+                # 1 punto por paquete
                 juego.puntuacion += 1
+
+                # Aumentar la carga del camión
+                juego.camion.carga += 1
+
+                # Si ya hay 8 paquetes entregados, +10 puntos extra
+                if juego.camion.carga >= 8:
+                    juego.puntuacion += 10
+                    juego.camion.carga = 0
+                    juego.camion.iniciar_reparto()  # ← ESTA LÍNEA FALTABA
+
+                # Reiniciar el recorrido del paquete
                 self.reiniciar_salida()
 
     # ---------------- FUNCIONES AUXILIARES ---------------- #
