@@ -16,11 +16,18 @@ class Juego:
         # Variable de fin del juego
         self.game_over = False
 
+        # Control del jefe
+        self.jefe_timer = 0           # frames que el jefe estará activo
+        self.jefe_duracion = 30       # 30 frames (~0.5 segundos)
+
         self.camion = Camion(1 * 8, 8 * 8)
         self.mario = Personaje("Mario", 24 * 8, 13 * 8)
         self.luigi = Personaje("Luigi", 6 * 8, 13 * 8)
         self.paquete = Paquete(32 * 8, 13 * 8)
-        self.jefe = Jefe(29 * 8, 12 * 8)
+
+        # Jefe colocado en la columna central
+        self.jefe = Jefe(15 * 8, 3 * 8)
+        self.jefe.desaparecer()   # ← El jefe NO aparece al iniciar
 
         self.pisos = [13 * 8, 8 * 8, 4 * 8]
         self.mario.pisos = self.pisos
@@ -55,7 +62,7 @@ class Juego:
             if self.paquete.estado == "entrega":
                 self.paquete.reiniciar_salida()
 
-        # Si camión está fuera → pausa juego
+        # Si camión está fuera → pause juego
         if self.camion.estado == "fuera":
             return
 
@@ -68,6 +75,16 @@ class Juego:
         #   ACTUALIZAR PAQUETE
         # ════════════════════════════════
         self.paquete.update(self.mario, self.luigi, self)
+
+        # ════════════════════════════════
+        #   ACTUALIZAR JEFE (animación)
+        # ════════════════════════════════
+        if self.jefe_timer > 0:
+            self.jefe_timer -= 1
+            if self.jefe_timer <= 0:
+                self.jefe.desaparecer()
+
+        self.jefe.update()
 
     # --------------------------------------------------
 
@@ -92,6 +109,9 @@ class Juego:
         pyxel.blt(self.mario.x, self.mario.y, *self.mario.sprite_mario)
         self.paquete.draw()
 
+        # Dibujar jefe
+        self.jefe.draw()
+
         # Mensaje mientras camión está de reparto
         if self.camion.estado == "fuera":
             pyxel.text(70, 60, "EL CAMION ESTA EN REPARTO...", 8)
@@ -109,7 +129,7 @@ class Juego:
         posiciones_x = [17 * 8, 19 * 8, 21 * 8]
 
         for i in range(min(self.fallos, 3)):
-            pyxel.text(posiciones_x[i], 0, "X", 8)  # color rosa fuerte
+            pyxel.text(posiciones_x[i], 0, "X", 8)
 
     # --------------------------------------------------
 
@@ -123,3 +143,10 @@ class Juego:
             self.luigi.mover_arriba()
         if pyxel.btnp(pyxel.KEY_S):
             self.luigi.mover_abajo()
+
+    # --------------------------------------------------
+
+    def invocar_jefe(self):
+        """El jefe aparece cuando hay un fallo."""
+        self.jefe.aparecer()
+        self.jefe_timer = self.jefe_duracion
