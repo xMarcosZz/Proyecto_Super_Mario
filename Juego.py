@@ -50,11 +50,10 @@ class Juego:
         # Si terminó el reparto → reaparece paquete
         if self.camion.reparto_terminado:
             self.camion.reparto_terminado = False
-            self.paquete.reiniciar_salida()
-            self.paquete.activo = True
-            self.paquete.estado = "salida"
-            self.paquete.piso = 0
-            self.paquete.vx = -self.paquete.VX
+
+            # Solo respawnear si el paquete estaba asignado al camión
+            if self.paquete.estado == "entrega":
+                self.paquete.reiniciar_salida()
 
         # Si camión está fuera → pausa juego
         if self.camion.estado == "fuera":
