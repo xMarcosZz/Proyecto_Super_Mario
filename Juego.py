@@ -47,21 +47,28 @@ class Juego:
         if self.game_over:
             return
 
-        # ─────────────────────────────────────────────
-        # PAUSA TOTAL mientras el jefe está activo
-        # ─────────────────────────────────────────────
+        # PAUSA CASI TOTAL mientras el jefe está activo
         if self.jefe_timer > 0:
             self.jefe_timer -= 1
+
+            # El jefe se anima
             self.jefe.update()
 
-            # Temblor suave mientras aparece el jefe
+            # El paquete sigue cayendo si estaba en caida_fallo
+            self.paquete.update(self.mario, self.luigi, self)
+
             self.shake = 3
 
             if self.jefe_timer <= 0:
                 self.jefe.desaparecer()
                 self.shake = 0
 
-            return  # ← PAUSA TOTAL DEL JUEGO
+                # Si el paquete se desactivó al caer, aquí reaparece el siguiente
+                if not self.paquete.activo:
+                    self.paquete.reiniciar_salida()
+                    self.paquete.activo = True
+
+            return  # ← se sigue pausando todo lo demás
 
         # ─────────────────────────────────────────────
         # ACTUALIZAR CAMIÓN

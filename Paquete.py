@@ -95,8 +95,16 @@ class Paquete:
         if self.estado == "caida_fallo":
             self.y_real += self.vy
             self.y = self.y_real
+
             if self.y > pyxel.height:
-                self.reiniciar_salida()
+                # La caja ya ha salido de la pantalla
+                # Mientras el jefe siga en pantalla → no generes otra
+                if juego.jefe_timer > 0:
+                    self.activo = False  # se desactiva y se queda "muerta"
+                else:
+                    # Si ya no hay jefe, se puede reiniciar normalmente
+                    self.reiniciar_salida()
+
             return
 
         # ==========================================================
