@@ -14,7 +14,7 @@ class Jefe:
         self.visible = False
 
         # ──────────────────────────────────────────────
-        #   SPRITES DEL JEFE (más claro y legible)
+        #   SPRITES DEL JEFE
         # ──────────────────────────────────────────────
         self.sprite_pose_1 = (0, 40, 32, -16, 16, 7)   # Jefe pose 1
         self.sprite_pose_2 = (0, 56, 32,  16, 16, 7)   # Jefe pose 2
@@ -27,7 +27,7 @@ class Jefe:
         # ──────────────────────────────────────────────
         self.frame_index = 0
         self.anim_contador = 0
-        self.anim_velocidad = 10  # cambia cada 10 frames
+        self.anim_velocidad = 5  # cambia cada 10 frames
 
     # ---------------------------------------------
     # Propiedades X/Y (para mantener tu estilo)

@@ -13,21 +13,21 @@ class Juego:
         self.puntuacion = 0
         self.fallos = 0
 
-        # Variable de fin del juego
+        # Variables de control
         self.game_over = False
-
-        # Control del jefe
         self.jefe_timer = 0           # frames que el jefe estará activo
-        self.jefe_duracion = 30       # 30 frames (~0.5 segundos)
+        self.jefe_duracion = 120      # 2 segundos a 60 FPS
+        self.shake = 0                # temblor
 
+        # Objetos principales
         self.camion = Camion(1 * 8, 8 * 8)
         self.mario = Personaje("Mario", 24 * 8, 13 * 8)
         self.luigi = Personaje("Luigi", 6 * 8, 13 * 8)
         self.paquete = Paquete(32 * 8, 13 * 8)
 
-        # Jefe colocado en la columna central
+        # Jefe
         self.jefe = Jefe(15 * 8, 3 * 8)
-        self.jefe.desaparecer()   # ← El jefe NO aparece al iniciar
+        self.jefe.desaparecer()
 
         self.pisos = [13 * 8, 8 * 8, 4 * 8]
         self.mario.pisos = self.pisos
@@ -40,50 +40,53 @@ class Juego:
         if pyxel.btnp(pyxel.KEY_ESCAPE):
             pyxel.quit()
 
-        # ════════════════════════════════
-        #   FIN DEL JUEGO (3 FALLOS)
-        # ════════════════════════════════
+        # Fin del juego
         if self.fallos >= 3:
             self.game_over = True
 
         if self.game_over:
-            return  # pausa todo
+            return
 
-        # ════════════════════════════════
-        #   ACTUALIZAR CAMIÓN
-        # ════════════════════════════════
+        # ─────────────────────────────────────────────
+        # PAUSA TOTAL mientras el jefe está activo
+        # ─────────────────────────────────────────────
+        if self.jefe_timer > 0:
+            self.jefe_timer -= 1
+            self.jefe.update()
+
+            # Temblor suave mientras aparece el jefe
+            self.shake = 3
+
+            if self.jefe_timer <= 0:
+                self.jefe.desaparecer()
+                self.shake = 0
+
+            return  # ← PAUSA TOTAL DEL JUEGO
+
+        # ─────────────────────────────────────────────
+        # ACTUALIZAR CAMIÓN
+        # ─────────────────────────────────────────────
         self.camion.update()
 
-        # Si terminó el reparto → reaparece paquete
         if self.camion.reparto_terminado:
             self.camion.reparto_terminado = False
-
-            # Solo respawnear si el paquete estaba asignado al camión
             if self.paquete.estado == "entrega":
                 self.paquete.reiniciar_salida()
 
-        # Si camión está fuera → pause juego
         if self.camion.estado == "fuera":
             return
 
-        # ════════════════════════════════
-        #   ACTUALIZAR PERSONAJES
-        # ════════════════════════════════
+        # ─────────────────────────────────────────────
+        # ACTUALIZAR PERSONAJES
+        # ─────────────────────────────────────────────
         self.actualizar_personajes()
 
-        # ════════════════════════════════
-        #   ACTUALIZAR PAQUETE
-        # ════════════════════════════════
+        # ─────────────────────────────────────────────
+        # ACTUALIZAR PAQUETE
+        # ─────────────────────────────────────────────
         self.paquete.update(self.mario, self.luigi, self)
 
-        # ════════════════════════════════
-        #   ACTUALIZAR JEFE (animación)
-        # ════════════════════════════════
-        if self.jefe_timer > 0:
-            self.jefe_timer -= 1
-            if self.jefe_timer <= 0:
-                self.jefe.desaparecer()
-
+        # Actualizar animación del jefe si estuviera visible
         self.jefe.update()
 
     # --------------------------------------------------
@@ -91,43 +94,43 @@ class Juego:
     def draw(self):
         pyxel.cls(7)
 
+        # Temblor mientras el jefe está en pantalla
+        dx = dy = 0
+        if self.jefe_timer > 0:
+            dx = pyxel.rndi(-self.shake, self.shake)
+            dy = pyxel.rndi(-self.shake, self.shake)
+
         ancho = pyxel.tilemaps[0].width
         alto = pyxel.tilemaps[0].height
-        pyxel.bltm(0, 0, 0, 0, 0, ancho, alto, colkey=7)
 
-        # Indicadores
+        pyxel.bltm(dx, dy, 0, 0, 0, ancho, alto, colkey=7)
+
         pyxel.text(200, 2, f"Puntos: {self.puntuacion}", 1)
         pyxel.text(200, 10, f"Fallos: {self.fallos}", 8)
         pyxel.text(200, 18, f"Camion: {self.camion.carga}/8", 1)
 
-        # DIBUJAR LAS CRUCES DE FALLOS
         self.dibujar_cruces_fallos()
 
-        # Objetos del juego
+        # Dibujar objetos
         self.camion.draw()
-        pyxel.blt(self.luigi.x, self.luigi.y, *self.luigi.sprite_luigi)
-        pyxel.blt(self.mario.x, self.mario.y, *self.mario.sprite_mario)
+        pyxel.blt(self.luigi.x + dx, self.luigi.y + dy, *self.luigi.sprite_luigi)
+        pyxel.blt(self.mario.x + dx, self.mario.y + dy, *self.mario.sprite_mario)
         self.paquete.draw()
-
-        # Dibujar jefe
         self.jefe.draw()
 
-        # Mensaje mientras camión está de reparto
+        # Mensaje de reparto
         if self.camion.estado == "fuera":
             pyxel.text(70, 60, "EL CAMION ESTA EN REPARTO...", 8)
 
-        # FIN DEL JUEGO
+        # Fin de juego
         if self.game_over:
             pyxel.rect(40, 40, 160, 40, 0)
             pyxel.text(80, 60, "  FIN DEL JUEGO", 8)
-            return
 
     # --------------------------------------------------
 
     def dibujar_cruces_fallos(self):
-        """Dibuja las X encima de las cabezas según los fallos."""
         posiciones_x = [17 * 8, 19 * 8, 21 * 8]
-
         for i in range(min(self.fallos, 3)):
             pyxel.text(posiciones_x[i], 0, "X", 8)
 
@@ -150,3 +153,4 @@ class Juego:
         """El jefe aparece cuando hay un fallo."""
         self.jefe.aparecer()
         self.jefe_timer = self.jefe_duracion
+        self.shake = 3   # temblor
