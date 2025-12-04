@@ -1,37 +1,43 @@
 import pyxel
 
+
 class Jefe:
     """
-    Jefe que aparece en la columna central y tiene una pequeña animación simple
-    alternando entre dos poses.
+    Representa al jefe que aparece en la columna central cuando el jugador
+    comete un fallo. El jefe muestra una animación sencilla alternando dos poses.
     """
 
     def __init__(self, x: int, y: int):
+        """
+        Inicializa el jefe con su posición en pantalla y sus sprites.
+        Parámetros:
+            x, y — coordenadas en píxeles donde se dibujará el jefe.
+        """
         self.x = x
         self.y = y
 
-        # Por defecto oculto
+        # Por defecto, el jefe está oculto.
         self.visible = False
 
         # ──────────────────────────────────────────────
-        #   SPRITES DEL JEFE
+        #   SPRITES DEL JEFE (pose 1 y pose 2)
+        #   (img, u, v, w, h, colkey)
         # ──────────────────────────────────────────────
-        self.sprite_pose_1 = (0, 40, 32, -16, 16, 7)   # Jefe pose 1
-        self.sprite_pose_2 = (0, 56, 32,  16, 16, 7)   # Jefe pose 2
+        self.pose_1 = (0, 40, 32, -16, 16, 7)
+        self.pose_2 = (0, 56, 32,  16, 16, 7)
 
-        # La pose actual comienza siendo la primera
-        self.sprite_actual = self.sprite_pose_1
+        # Sprite actual que se dibuja
+        self.sprite_actual = self.pose_1
 
         # ──────────────────────────────────────────────
         #   VARIABLES DE ANIMACIÓN
         # ──────────────────────────────────────────────
-        self.frame_index = 0
         self.anim_contador = 0
-        self.anim_velocidad = 5  # cambia cada 10 frames
+        self.anim_velocidad = 5  # cambia cada 5 frames
 
-    # ---------------------------------------------
-    # Propiedades X/Y (para mantener tu estilo)
-    # ---------------------------------------------
+    # --------------------------------------------------
+    #  PROPIEDADES X E Y (con validación básica)
+    # --------------------------------------------------
     @property
     def x(self) -> int:
         return self.__x
@@ -48,19 +54,25 @@ class Jefe:
     def y(self, value: int):
         self.__y = int(value)
 
-    # ---------------------------------------------
-    # Control de visibilidad
-    # ---------------------------------------------
+    # --------------------------------------------------
+    #  CONTROL DE VISIBILIDAD
+    # --------------------------------------------------
     def aparecer(self):
+        """Hace visible al jefe para que pueda dibujarse y animarse."""
         self.visible = True
 
     def desaparecer(self):
+        """Oculta al jefe y detiene su animación."""
         self.visible = False
 
-    # ---------------------------------------------
-    # Lógica de animación
-    # ---------------------------------------------
+    # --------------------------------------------------
+    #  ANIMACIÓN
+    # --------------------------------------------------
     def update(self):
+        """
+        Actualiza la animación del jefe alternando entre dos poses
+        si está visible. Si está oculto, no hace nada.
+        """
         if not self.visible:
             return
 
@@ -70,15 +82,16 @@ class Jefe:
             self.anim_contador = 0
 
             # Alternar entre pose 1 y pose 2
-            if self.sprite_actual == self.sprite_pose_1:
-                self.sprite_actual = self.sprite_pose_2
+            if self.sprite_actual == self.pose_1:
+                self.sprite_actual = self.pose_2
             else:
-                self.sprite_actual = self.sprite_pose_1
+                self.sprite_actual = self.pose_1
 
-    # ---------------------------------------------
-    # Dibujado
-    # ---------------------------------------------
+    # --------------------------------------------------
+    #  DIBUJADO
+    # --------------------------------------------------
     def draw(self):
+        """Dibuja al jefe si está visible."""
         if not self.visible:
             return
 

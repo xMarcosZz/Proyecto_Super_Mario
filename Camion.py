@@ -1,62 +1,100 @@
 import pyxel
 
+
 class Camion:
+    """
+    Representa el camión encargado de recoger paquetes.
+    Cuando acumula 8 paquetes, sale a reparto, desaparece unos segundos
+    y después regresa a su posición original.
+    """
 
-    VELOCIDAD = 1
+    VELOCIDAD = 1  # Velocidad horizontal del camión (px/frame)
 
-    def __init__(self, x, y):
-        # posiciones iniciales
+    # Estados posibles:
+    PARADO = "parado"
+    SALIENDO = "saliendo"
+    FUERA = "fuera"
+    VOLVIENDO = "volviendo"
+
+    def __init__(self, x: int, y: int):
+        """
+        Parámetros:
+            x, y — Coordenadas iniciales del camión
+        """
         self.x = x
         self.y = y
-        self.x_inicial = x
+        self.x_inicial = x  # Guarda su posición base para volver
 
-        # gráfico
+        # Sprite del camión (img, u, v, w, h, colkey)
         self.sprite_camion = (0, 16, 32, 24, 16, 7)
 
-        # carga de paquetes
+        # Cantidad de paquetes entregados (0 a 8)
         self.carga = 0
 
-        # estado del camión
-        # "parado" → normal
-        # "saliendo" → se va a la izquierda
-        # "fuera" → desaparecido
-        # "volviendo" → vuelve por la derecha
-        self.estado = "parado"
+        # Estado inicial
+        self.estado = Camion.PARADO
 
-        # para controlar tiempos
+        # Timer para controlar cuánto tiempo está fuera
         self.timer = 0
 
-        # importante para el respawn del paquete
+        # Indica si el camión ha terminado el reparto (para que el juego respawnee un paquete)
         self.reparto_terminado = False
 
+    # -------------------------------------------------------------------
+    #   LÓGICA DEL REPARTO
+    # -------------------------------------------------------------------
+
     def iniciar_reparto(self):
-        """Llamado cuando carga == 8"""
-        self.estado = "saliendo"
+        """
+        Llamado cuando el camión alcanza 8 paquetes entregados.
+        Inicia la animación de salida hacia la izquierda.
+        """
+        self.estado = Camion.SALIENDO
         self.reparto_terminado = False
         self.timer = 0
 
     def update(self):
-        # ESTADO: saliendo a la izquierda
-        if self.estado == "saliendo":
+        """Actualiza la posición y el estado del camión según su animación."""
+
+        # ───────────────────────────────────────────
+        # ESTADO: saliendo hacia la izquierda
+        # ───────────────────────────────────────────
+        if self.estado == Camion.SALIENDO:
             self.x -= self.VELOCIDAD
-            if self.x < -40:  # ya salió
-                self.estado = "fuera"
-                self.timer = pyxel.frame_count
 
-        # ESTADO: fuera (pausa de 5 segundos)
-        elif self.estado == "fuera":
-            if pyxel.frame_count - self.timer > 5 * 30:
-                self.estado = "volviendo"
-                self.x = -40
+            # ¿Está ya completamente fuera de la pantalla?
+            if self.x < -40:
+                self.estado = Camion.FUERA
+                self.timer = pyxel.frame_count  # Guarda el instante en el que salió
 
-        # ESTADO: volviendo por la derecha
-        elif self.estado == "volviendo":
+        # ───────────────────────────────────────────
+        # ESTADO: fuera (descanso de 5 segundos)
+        # ───────────────────────────────────────────
+        elif self.estado == Camion.FUERA:
+            tiempo_fuera = pyxel.frame_count - self.timer
+
+            if tiempo_fuera > 5 * 30:  # 5 segundos a 30 FPS
+                self.estado = Camion.VOLVIENDO
+                self.x = -40  # Reaparece desde la izquierda
+
+        # ───────────────────────────────────────────
+        # ESTADO: volviendo hacia la posición inicial
+        # ───────────────────────────────────────────
+        elif self.estado == Camion.VOLVIENDO:
             self.x += self.VELOCIDAD
+
             if self.x >= self.x_inicial:
                 self.x = self.x_inicial
-                self.estado = "parado"
-                self.carga = 0
-                self.reparto_terminado = True  # avisa al juego que puede aparecer un paquete
+                self.estado = Camion.PARADO
+                self.carga = 0            # Reiniciar carga
+                self.reparto_terminado = True  # Avisar al juego
+
+        # Si está PARADO, no hace nada especial
+
+    # -------------------------------------------------------------------
+    #   DIBUJADO
+    # -------------------------------------------------------------------
 
     def draw(self):
+        """Dibuja el camión en pantalla según su sprite."""
         pyxel.blt(self.x, self.y, *self.sprite_camion)
