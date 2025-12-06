@@ -1,12 +1,10 @@
 """
-Juego.py — versión corregida y funcional
----------------------------------------
+Juego.py — Lógica principal del juego
 Incluye:
-• Menú principal
-• Menú de configuración (velocidad + número de paquetes)
-• Juego completo
-• Game over con reinicio
-• Eliminado KEY_ENTER (solo KEY_RETURN)
+- Menú principal
+- Menú de configuración
+- Partida
+- Control de camión, paquetes, jefe y personajes
 """
 
 import pyxel
@@ -18,328 +16,140 @@ from Jefe import Jefe
 
 class Juego:
 
+    # =====================================================
+    #                   INICIALIZACIÓN
+    # =====================================================
+
     def __init__(self):
         pyxel.load("recursos.pyxres")
 
-        # ----- ESTADOS DEL JUEGO -----
-        self.estado_juego = "menu"   # menu → config → jugando → gameover
+        # ---------------- ESTADO DEL JUEGO ----------------
+        self.estado = "menu"     # "menu", "config", "juego"
+        self.game_over = False
 
-        # ----- MENÚ -----
-        self.menu_index = 0
-        self.menu_opciones = ["JUGAR", "SALIR"]
+        # ---------------- CONFIGURACIÓN -------------------
+        self.velocidades = [1.5, 2.0, 2.5, 3.0]
+        self.velocidades_texto = ["Muy lenta", "Lenta", "Media", "Rápida"]
+        self.config_vel_index = 2
 
-        # ----- CONFIGURACIÓN -----
-        self.config_vel_index = 1       # velocidad por defecto
-        self.config_velocidades = [1.5, 2.5, 3.5, 4.5]
-        self.config_num_paquetes = 1    # 1 o 2 paquetes
-        self.config_submenu = 0         # 0 = velocidad, 1 = nº paquetes, 2 = aceptar
+        self.config_paquetes_index = 0   # 0 = 1 paquete, 1 = 2 paquetes
+        self.num_paquetes = 1
 
-        # ----- MARCADORES -----
+        # ---------------- CURSORES ------------------------
+        self.menu_opcion = 0       # 0 = JUGAR, 1 = SALIR
+        self.config_cursor = 0     # 0 vel, 1 paquetes, 2 empezar, 3 volver
+
+        # ---------------- MARCADORES ----------------------
         self.puntuacion = 0
         self.fallos = 0
 
-        self.game_over = False
+        # ---------------- JEFE ----------------------------
         self.jefe_timer = 0
-        self.jefe_duracion = 120
+        self.jefe_duracion = 120       # 2 segundos
         self.shake = 0
-
-        # ----- OBJETOS DEL JUEGO -----
-        self.camion = Camion(1 * 8, 8 * 8)
-        self.mario = Personaje("Mario", 24 * 8, 13 * 8)
-        self.luigi = Personaje("Luigi", 6 * 8, 13 * 8)
-
-        # Se crearán en _crear_paquetes_iniciales()
-        self.paquetes = []
 
         self.jefe = Jefe(15 * 8, 3 * 8)
         self.jefe.desaparecer()
+
+        # ---------------- PERSONAJES ----------------------
+        self.mario = Personaje("Mario", 24 * 8, 13 * 8)
+        self.luigi = Personaje("Luigi", 6 * 8, 13 * 8)
 
         self.pisos = [13 * 8, 8 * 8, 4 * 8]
         self.mario.pisos = self.pisos
         self.luigi.pisos = self.pisos
 
-    # ============================================================
-    #                      UPDATE GENERAL
-    # ============================================================
+        # ---------------- CAMIÓN --------------------------
+        self.camion = Camion(1 * 8, 8 * 8)
+
+        # ---------------- PAQUETES ------------------------
+        self.paquetes = []
+
+
+    # =====================================================
+    #                   UPDATE GENERAL
+    # =====================================================
 
     def update(self):
+
         if pyxel.btnp(pyxel.KEY_ESCAPE):
             pyxel.quit()
 
-        if self.estado_juego == "menu":
+        if self.estado == "menu":
             self._update_menu()
             return
 
-        if self.estado_juego == "config":
+        if self.estado == "config":
             self._update_config()
             return
 
-        if self.estado_juego == "gameover":
-            self._update_game_over()
+        if self.estado == "juego":
+            self._update_juego()
             return
 
-        if self.estado_juego == "jugando":
-            self._update_jugando()
-            return
 
-    # ============================================================
-    #                        MENÚ PRINCIPAL
-    # ============================================================
+    # =====================================================
+    #                   MENÚ PRINCIPAL
+    # =====================================================
 
     def _update_menu(self):
 
-        # Mover cursor en el menú
         if pyxel.btnp(pyxel.KEY_UP):
-            self.menu_index = (self.menu_index - 1) % len(self.menu_opciones)
+            self.menu_opcion = (self.menu_opcion - 1) % 2
 
         if pyxel.btnp(pyxel.KEY_DOWN):
-            self.menu_index = (self.menu_index + 1) % len(self.menu_opciones)
+            self.menu_opcion = (self.menu_opcion + 1) % 2
 
-        # Selección con ENTER (RETURN)
         if pyxel.btnp(pyxel.KEY_RETURN):
-            opcion = self.menu_opciones[self.menu_index]
-
-            if opcion == "JUGAR":
-                self.estado_juego = "config"
-
-            elif opcion == "SALIR":
+            if self.menu_opcion == 0:
+                self.estado = "config"
+            else:
                 pyxel.quit()
 
-    # ============================================================
-    #                  SUBMENÚ DE CONFIGURACIÓN
-    # ============================================================
+
+    # =====================================================
+    #               MENÚ CONFIGURACIÓN
+    # =====================================================
 
     def _update_config(self):
 
         if pyxel.btnp(pyxel.KEY_UP):
-            self.config_submenu = (self.config_submenu - 1) % 3
+            self.config_cursor = (self.config_cursor - 1) % 4
 
         if pyxel.btnp(pyxel.KEY_DOWN):
-            self.config_submenu = (self.config_submenu + 1) % 3
+            self.config_cursor = (self.config_cursor + 1) % 4
 
-        # Ajustar valores
-        if self.config_submenu == 0:  # velocidad
+        # Ajustar velocidad
+        if self.config_cursor == 0:
             if pyxel.btnp(pyxel.KEY_LEFT):
-                self.config_vel_index = max(0, self.config_vel_index - 1)
+                self.config_vel_index = (self.config_vel_index - 1) % len(self.velocidades)
             if pyxel.btnp(pyxel.KEY_RIGHT):
-                self.config_vel_index = min(len(self.config_velocidades) - 1,
-                                            self.config_vel_index + 1)
+                self.config_vel_index = (self.config_vel_index + 1) % len(self.velocidades)
 
-        elif self.config_submenu == 1:  # nº paquetes
-            if pyxel.btnp(pyxel.KEY_LEFT):
-                self.config_num_paquetes = 1
-            if pyxel.btnp(pyxel.KEY_RIGHT):
-                self.config_num_paquetes = 2
+        # Ajustar nº paquetes
+        if self.config_cursor == 1:
+            if pyxel.btnp(pyxel.KEY_LEFT) or pyxel.btnp(pyxel.KEY_RIGHT):
+                self.config_paquetes_index = 1 - self.config_paquetes_index
 
-        # Confirmar selección
-        if self.config_submenu == 2 and pyxel.btnp(pyxel.KEY_RETURN):
-            self._configurar_velocidad_paquetes()
-            self.reiniciar_partida(desde_menu=True)
-            self.estado_juego = "jugando"
+        # Seleccionar opción
+        if pyxel.btnp(pyxel.KEY_RETURN):
 
-    # ============================================================
-    #                     UPDATE DE JUEGO REAL
-    # ============================================================
+            # EMPEZAR PARTIDA
+            if self.config_cursor == 2:
+                self.iniciar_partida()
 
-    def _update_jugando(self):
+            # VOLVER
+            elif self.config_cursor == 3:
+                self.estado = "menu"
 
-        # GAME OVER por fallos
-        if self.fallos >= 3:
-            self.estado_juego = "gameover"
-            return
 
-        # JEFE activo (pausa)
-        if self._update_jefe_activo():
-            return
+    # =====================================================
+    #                 INICIAR PARTIDA
+    # =====================================================
 
-        # CAMIÓN
-        if self._update_camion():
-            return
+    def iniciar_partida(self):
 
-        # PERSONAJES
-        self._update_personajes()
-
-        # PAQUETES
-        for paquete in self.paquetes:
-            paquete.update(self.mario, self.luigi, self)
-
-        # JEFE animación
-        self.jefe.update()
-
-    # ============================================================
-    #                     GAME OVER Y REINICIO
-    # ============================================================
-
-    def _update_game_over(self):
-
-        if pyxel.btnp(pyxel.KEY_R):
-            self.reiniciar_partida(desde_menu=True)
-            self.estado_juego = "menu"
-
-    # ============================================================
-    #                         DIBUJADO
-    # ============================================================
-
-    def draw(self):
-        pyxel.cls(7)
-
-        if self.estado_juego == "menu":
-            return self._draw_menu()
-
-        if self.estado_juego == "config":
-            return self._draw_config()
-
-        # Temblor
-        dx = dy = 0
-        if self.jefe_timer > 0:
-            dx = pyxel.rndi(-self.shake, self.shake)
-            dy = pyxel.rndi(-self.shake, self.shake)
-
-        # Tilemap
-        ancho = pyxel.tilemaps[0].width
-        alto = pyxel.tilemaps[0].height
-        pyxel.bltm(dx, dy, 0, 0, 0, ancho, alto, colkey=7)
-
-        # HUD
-        pyxel.text(200, 2, f"Puntos: {self.puntuacion}", 7)
-        pyxel.text(200, 10, f"Fallos: {self.fallos}", 8)
-        pyxel.text(200, 18, f"Camion: {self.camion.carga}/8", 7)
-
-        # Cruces de fallos
-        self._draw_cruces()
-
-        # Objetos
-        self.camion.draw()
-        pyxel.blt(self.luigi.x, self.luigi.y, *self.luigi.sprite_luigi)
-        pyxel.blt(self.mario.x, self.mario.y, *self.mario.sprite_mario)
-
-        for p in self.paquetes:
-            p.draw()
-
-        self.jefe.draw()
-
-        if self.estado_juego == "gameover":
-            self._draw_game_over()
-
-    # ============================================================
-    #               MÉTODOS AUXILIARES - CONFIGURACIÓN
-    # ============================================================
-
-    def _configurar_velocidad_paquetes(self):
-        nueva_vel = self.config_velocidades[self.config_vel_index]
-        for paquete in self.paquetes:
-            paquete.VX = nueva_vel
-
-    def _crear_paquetes_iniciales(self):
-        self.paquetes = [
-            Paquete(32 * 8, 13 * 8)
-        ]
-        if self.config_num_paquetes == 2:
-            self.paquetes.append(
-                Paquete(32 * 8 + 50, 13 * 8)
-            )
-
-    # ============================================================
-    #                  MÉTODOS AUXILIARES VARIOS
-    # ============================================================
-
-    def _update_jefe_activo(self):
-        if self.jefe_timer <= 0:
-            return False
-
-        self.jefe_timer -= 1
-        self.jefe.update()
-
-        for p in self.paquetes:
-            p.update(self.mario, self.luigi, self)
-
-        self.shake = 3
-
-        if self.jefe_timer <= 0:
-            self.jefe.desaparecer()
-            self.shake = 0
-
-        return True
-
-    def _update_camion(self):
-        self.camion.update()
-
-        if self.camion.reparto_terminado:
-            self.camion.reparto_terminado = False
-            for p in self.paquetes:
-                p.reiniciar_salida()
-
-        if self.camion.estado == "fuera":
-            return True
-
-        return False
-
-    def _update_personajes(self):
-
-        if pyxel.btnp(pyxel.KEY_UP):
-            self.mario.mover_arriba()
-        if pyxel.btnp(pyxel.KEY_DOWN):
-            self.mario.mover_abajo()
-
-        if pyxel.btnp(pyxel.KEY_W):
-            self.luigi.mover_arriba()
-        if pyxel.btnp(pyxel.KEY_S):
-            self.luigi.mover_abajo()
-
-    # ============================================================
-    #                         DIBUJADO AUXILIAR
-    # ============================================================
-
-    def _draw_menu(self):
-        pyxel.cls(0)
-        pyxel.text(85, 30, "SUPER MARIO LOGISTICS", 10)
-
-        opciones_y = 80
-        for i, op in enumerate(self.menu_opciones):
-            color = 7 if i == self.menu_index else 5
-            pyxel.text(110, opciones_y + i * 12, op, color)
-
-        pyxel.text(110, 140, "ENTER para seleccionar", 13)
-
-    def _draw_config(self):
-        pyxel.cls(1)
-        pyxel.text(70, 20, "CONFIGURACION DE PARTIDA", 7)
-
-        # Velocidad
-        vel_lbl = f"VELOCIDAD: {self.config_velocidades[self.config_vel_index]}"
-        col = 10 if self.config_submenu == 0 else 7
-        pyxel.text(60, 60, vel_lbl, col)
-
-        # Nº paquetes
-        num_lbl = f"PAQUETES: {self.config_num_paquetes}"
-        col = 10 if self.config_submenu == 1 else 7
-        pyxel.text(60, 80, num_lbl, col)
-
-        # Confirmar
-        col = 10 if self.config_submenu == 2 else 7
-        pyxel.text(60, 110, "EMPEZAR PARTIDA (ENTER)", col)
-
-    def _draw_cruces(self):
-        posiciones_x = [17 * 8, 19 * 8, 21 * 8]
-        for i in range(min(self.fallos, 3)):
-            pyxel.text(posiciones_x[i], 0, "X", 8)
-
-    def _draw_game_over(self):
-        pyxel.rect(0, 0, 240, 180, 0)
-        pyxel.text(100, 70, "GAME OVER", pyxel.frame_count % 15)
-        pyxel.text(80, 100, "Pulsa R para volver al menu", 7)
-
-    # ============================================================
-    #                     EVENTOS ESPECIALES
-    # ============================================================
-
-    def invocar_jefe(self):
-        self.jefe.aparecer()
-        self.jefe_timer = self.jefe_duracion
-        self.shake = 3
-
-    def reiniciar_partida(self, desde_menu=False):
-
+        # Reset marcadores
         self.puntuacion = 0
         self.fallos = 0
         self.game_over = False
@@ -362,6 +172,290 @@ class Juego:
         self.jefe_timer = 0
         self.shake = 0
 
-        # Crear paquetes según configuración
-        self._crear_paquetes_iniciales()
+        # Aplicar velocidad configurada
+        Paquete.VX = self.velocidades[self.config_vel_index]
 
+        # Nº de paquetes
+        self.num_paquetes = 1 if self.config_paquetes_index == 0 else 2
+
+        # Crear paquetes
+        self._crear_paquetes()
+
+        self.estado = "juego"
+
+
+    def _crear_paquetes(self):
+        """Crea 1 o 2 paquetes según la configuración."""
+        self.paquetes = []
+
+        # Paquete principal
+        p1 = Paquete(Paquete.COL_SALIDA_X * 8, Paquete.PISOS_Y[0] * 8)
+        p1.reiniciar_salida()
+        self.paquetes.append(p1)
+
+        if self.num_paquetes == 2:
+            # Segundo paquete: empieza apagado
+            p2 = Paquete(Paquete.COL_SALIDA_X * 8, Paquete.PISOS_Y[0] * 8)
+            p2.reiniciar_salida()
+            p2.activo = False
+            self.paquetes.append(p2)
+
+
+    # =====================================================
+    #                     UPDATE JUEGO
+    # =====================================================
+
+    def _update_juego(self):
+
+        # Game over
+        if self.game_over:
+            if pyxel.btnp(pyxel.KEY_R):
+                self.iniciar_partida()
+            return
+
+        # Jefe activo → pausar todo excepto caída
+        if self._update_jefe_activo():
+            return
+
+        # Camión saliendo o volviendo → pausa
+        if self._update_camion():
+            return
+
+        # Controles
+        self._update_personajes()
+
+        # Paquetes
+        self._update_paquetes()
+
+        # ¿game over?
+        if self.fallos >= 3:
+            self.game_over = True
+
+
+    # =====================================================
+    #                UPDATE PAQUETES (CORREGIDO)
+    # =====================================================
+
+    def _update_paquetes(self):
+
+        MIN_DIST = 40   # Distancia mínima entre paquetes
+
+        # 2 PAQUETES → activar 2º cuando 1º llegue a piso 1
+        if self.num_paquetes == 2:
+            p1 = self.paquetes[0]
+            p2 = self.paquetes[1]
+
+            if (not p2.activo
+                and p1.piso == 1
+                and p1.x <= 17 * 8):
+                p2.reiniciar_salida()
+                p2.activo = True
+
+            # Mantener separación mínima
+            if p1.activo and p2.activo and p1.piso == p2.piso:
+
+                # p1 delante, p2 detrás
+                if p1.x > p2.x and (p1.x - p2.x) < MIN_DIST:
+                    p2.x = p1.x - MIN_DIST
+                    p2.x_real = float(p2.x)
+
+                # p2 delante, p1 detrás
+                if p2.x > p1.x and (p2.x - p1.x) < MIN_DIST:
+                    p1.x = p2.x - MIN_DIST
+                    p1.x_real = float(p1.x)
+
+        # Actualizar movimiento de cada paquete
+        for p in self.paquetes:
+            p.update(self.mario, self.luigi, self)
+
+
+    # =====================================================
+    #                UPDATE JEFE ACTIVO
+    # =====================================================
+
+    def _update_jefe_activo(self):
+
+        if self.jefe_timer <= 0:
+            return False
+
+        self.jefe_timer -= 1
+        self.jefe.update()
+
+        # Solo actualizamos paquetes que caen
+        for p in self.paquetes:
+            if p.estado == "caida_fallo":
+                p.update(self.mario, self.luigi, self)
+
+        self.shake = 3
+
+        if self.jefe_timer <= 0:
+            self.jefe.desaparecer()
+            self.shake = 0
+
+            # Respawn seguro
+            for p in self.paquetes:
+                if not p.activo:
+                    p.reiniciar_salida()
+                    p.activo = True
+
+        return True
+
+
+    # =====================================================
+    #                  UPDATE CAMIÓN
+    # =====================================================
+
+    def _update_camion(self):
+
+        self.camion.update()
+
+        if self.camion.reparto_terminado:
+            self.camion.reparto_terminado = False
+
+            for i, p in enumerate(self.paquetes):
+                p.reiniciar_salida()
+                p.activo = True
+                if i == 1 and self.num_paquetes == 2:
+                    p.activo = False   # segundo espera activación
+
+        return self.camion.estado == "fuera"
+
+
+    # =====================================================
+    #                 UPDATE PERSONAJES
+    # =====================================================
+
+    def _update_personajes(self):
+
+        if pyxel.btnp(pyxel.KEY_UP):
+            self.mario.mover_arriba()
+        if pyxel.btnp(pyxel.KEY_DOWN):
+            self.mario.mover_abajo()
+
+        if pyxel.btnp(pyxel.KEY_W):
+            self.luigi.mover_arriba()
+        if pyxel.btnp(pyxel.KEY_S):
+            self.luigi.mover_abajo()
+
+
+    # =====================================================
+    #                     DIBUJADO
+    # =====================================================
+
+    def draw(self):
+
+        if self.estado == "menu":
+            self._draw_menu()
+        elif self.estado == "config":
+            self._draw_config()
+        elif self.estado == "juego":
+            self._draw_juego()
+
+
+    # ------------------- MENÚ ---------------------
+
+    def _draw_menu(self):
+        pyxel.cls(0)
+
+        titulo = "PROYECTO SUPER MARIO"
+        tx = (pyxel.width - len(titulo) * 4) // 2
+        pyxel.text(tx, 20, titulo, 10)
+
+        opciones = ["JUGAR", "SALIR"]
+        y_base = 60
+        x_base = 100
+
+        for i, t in enumerate(opciones):
+            color = 10 if i == self.menu_opcion else 7
+            pref = "> " if i == self.menu_opcion else "  "
+            pyxel.text(x_base - 20, y_base + i * 10, pref + t, color)
+
+
+    # ---------------- CONFIG -----------------------
+
+    def _draw_config(self):
+        pyxel.cls(0)
+
+        pyxel.text(85, 20, "CONFIGURACION", 11)
+
+        vel = self.velocidades_texto[self.config_vel_index]
+        num = "1" if self.config_paquetes_index == 0 else "2"
+
+        lineas = [
+            f"Velocidad: {vel}",
+            f"Paquetes: {num}",
+            "EMPEZAR PARTIDA",
+            "VOLVER AL MENU"
+        ]
+
+        y = 55
+        for i, t in enumerate(lineas):
+            color = 10 if i == self.config_cursor else 7
+            pref = "> " if i == self.config_cursor else "  "
+            pyxel.text(40, y + i * 10, pref + t, color)
+
+
+    # ---------------- JUEGO ------------------------
+
+    def _draw_juego(self):
+        pyxel.cls(7)
+
+        dx = dy = 0
+        if self.jefe_timer > 0:
+            dx = pyxel.rndi(-self.shake, self.shake)
+            dy = pyxel.rndi(-self.shake, self.shake)
+
+        # Fondo
+        pyxel.bltm(dx, dy, 0, 0, 0, pyxel.tilemaps[0].width, pyxel.tilemaps[0].height, colkey=7)
+
+        # HUD
+        pyxel.text(200, 2, f"Puntos: {self.puntuacion}", 1)
+        pyxel.text(200, 10, f"Fallos: {self.fallos}", 8)
+        pyxel.text(200, 18, f"Camion: {self.camion.carga}/8", 1)
+
+        self._draw_fallos()
+
+        # Objetos
+        self.camion.draw()
+        pyxel.blt(self.luigi.x + dx, self.luigi.y + dy, *self.luigi.sprite_luigi)
+        pyxel.blt(self.mario.x + dx, self.mario.y + dy, *self.mario.sprite_mario)
+
+        for p in self.paquetes:
+            p.draw()
+
+        self.jefe.draw()
+
+        # Mensaje de reparto centrado
+        if self.camion.estado == "fuera":
+            msg = "EL CAMION ESTA EN REPARTO..."
+            pyxel.text((256 - len(msg) * 4) // 2, 120, msg, 8)
+
+        if self.game_over:
+            self._draw_game_over()
+
+
+    def _draw_fallos(self):
+        pos = [17 * 8, 19 * 8, 21 * 8]
+        for i in range(min(self.fallos, 3)):
+            pyxel.text(pos[i], 0, "X", 8)
+
+
+    def _draw_game_over(self):
+
+        pyxel.rect(0, 0, 256, 256, 0)
+
+        msg1 = "GAME OVER"
+        msg2 = "Pulsa R para reiniciar"
+
+        pyxel.text((256 - len(msg1) * 4) // 2, 100, msg1, 10)
+        pyxel.text((256 - len(msg2) * 4) // 2, 120, msg2, 7)
+
+
+    # =====================================================
+    #                EVENTO: APARICIÓN DEL JEFE
+    # =====================================================
+
+    def invocar_jefe(self):
+        self.jefe.aparecer()
+        self.jefe_timer = self.jefe_duracion
+        self.shake = 3

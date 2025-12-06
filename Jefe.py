@@ -3,40 +3,41 @@ import pyxel
 
 class Jefe:
     """
-    Representa al jefe que aparece en la columna central cuando el jugador
-    comete un fallo. El jefe muestra una animación sencilla alternando dos poses.
+    Representa al jefe que aparece cuando el jugador comete un fallo.
+    El jefe se coloca en la parte superior central y alterna entre dos poses
+    para simular una animación básica.
     """
 
     def __init__(self, x: int, y: int):
         """
-        Inicializa el jefe con su posición en pantalla y sus sprites.
+        Inicializa el jefe con su posición y sus sprites.
         Parámetros:
-            x, y — coordenadas en píxeles donde se dibujará el jefe.
+            x, y — coordenadas iniciales donde se dibuja el jefe.
         """
         self.x = x
         self.y = y
 
-        # Por defecto, el jefe está oculto.
+        # Estado de visibilidad del jefe
         self.visible = False
 
         # ──────────────────────────────────────────────
-        #   SPRITES DEL JEFE (pose 1 y pose 2)
-        #   (img, u, v, w, h, colkey)
+        # SPRITES DEL JEFE (pose 1 y pose 2)
+        # (img, u, v, w, h, colkey)
+        # Nota: El uso de lista + índice permite expandir a más poses fácilmente.
         # ──────────────────────────────────────────────
-        self.pose_1 = (0, 40, 32, -16, 16, 7)
-        self.pose_2 = (0, 56, 32,  16, 16, 7)
+        self.sprites = [
+            (0, 40, 32, -16, 16, 7),   # sprite_pose_1
+            (0, 56, 32,  16, 16, 7),   # sprite_pose_2
+        ]
 
-        # Sprite actual que se dibuja
-        self.sprite_actual = self.pose_1
+        self.frame_index = 0  # índice actual de sprite
 
-        # ──────────────────────────────────────────────
-        #   VARIABLES DE ANIMACIÓN
-        # ──────────────────────────────────────────────
+        # Variables de animación
         self.anim_contador = 0
-        self.anim_velocidad = 5  # cambia cada 5 frames
+        self.anim_velocidad = 5  # número de frames por cambio de pose
 
     # --------------------------------------------------
-    #  PROPIEDADES X E Y (con validación básica)
+    # PROPIEDADES X/Y (para mantener estilo uniforme)
     # --------------------------------------------------
     @property
     def x(self) -> int:
@@ -55,23 +56,24 @@ class Jefe:
         self.__y = int(value)
 
     # --------------------------------------------------
-    #  CONTROL DE VISIBILIDAD
+    # CONTROL DE VISIBILIDAD
     # --------------------------------------------------
     def aparecer(self):
-        """Hace visible al jefe para que pueda dibujarse y animarse."""
+        """Muestra al jefe en pantalla."""
         self.visible = True
 
     def desaparecer(self):
-        """Oculta al jefe y detiene su animación."""
+        """Oculta al jefe y reinicia la animación."""
         self.visible = False
+        self.frame_index = 0
 
     # --------------------------------------------------
-    #  ANIMACIÓN
+    # ANIMACIÓN
     # --------------------------------------------------
     def update(self):
         """
-        Actualiza la animación del jefe alternando entre dos poses
-        si está visible. Si está oculto, no hace nada.
+        Actualiza la animación alternando de sprite cada X frames.
+        Si el jefe está oculto, no hace nada.
         """
         if not self.visible:
             return
@@ -80,20 +82,16 @@ class Jefe:
 
         if self.anim_contador >= self.anim_velocidad:
             self.anim_contador = 0
-
-            # Alternar entre pose 1 y pose 2
-            if self.sprite_actual == self.pose_1:
-                self.sprite_actual = self.pose_2
-            else:
-                self.sprite_actual = self.pose_1
+            # Cambia entre 0 ↔ 1 (dos poses)
+            self.frame_index = 1 - self.frame_index
 
     # --------------------------------------------------
-    #  DIBUJADO
+    # DIBUJADO
     # --------------------------------------------------
     def draw(self):
-        """Dibuja al jefe si está visible."""
+        """Dibuja al jefe si se encuentra visible."""
         if not self.visible:
             return
 
-        img, u, v, w, h, colkey = self.sprite_actual
+        img, u, v, w, h, colkey = self.sprites[self.frame_index]
         pyxel.blt(self.x, self.y, img, u, v, w, h, colkey)

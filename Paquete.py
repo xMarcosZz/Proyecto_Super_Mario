@@ -1,53 +1,50 @@
 import pyxel
 
-
 class Paquete:
     """
-    Gestiona todo el recorrido del paquete:
-    - Salida desde la derecha (piso 0)
-    - Mario / Luigi lo recogen según piso
-    - Se mueve por las cintas respetando la columna central
-    - Ahora sube AUTOMÁTICAMENTE si el personaje está en el piso
-    - Entrega final al camión en el piso 2
+    Controla el comportamiento del paquete:
+    - Recorrido completo en los 3 pisos.
+    - Respeto de la columna morada (teletransporte).
+    - Subida automática entre pisos.
+    - Entrega al camión.
+    - Caída cuando ocurre un fallo.
     """
 
-    # Altura de los pisos
+    # --- CONSTANTES DE POSICIÓN ---
     PISOS_Y = [13, 9, 5]
 
-    # Columna de salida
     COL_SALIDA_X = 32
     COL_STOP_MARIO = 26
     COL_MARIO_X = 24
-
-    # Luigi
     COL_LUIGI_X = 6
 
-    # Columna morada central
     COL_COL_CONTACTO_DER = 17
     COL_COL_DETRAS_IZQ = 14
 
     COL_COL_CONTACTO_IZQ = 14
     COL_COL_DETRAS_DER = 17
 
-    # Final de las cintas
     COL_FINAL_LUIGI = 9
     COL_FINAL_MARIO_P1 = 21
 
-    # Posiciones iniciales cuando sube de piso
-    POS_INICIO_CINTA = [(22, 13), (10, 9), (22, 5)]
+    POS_INICIO_CINTA = [
+        (22, 13),  # piso 0 → pasa al 1
+        (10, 9),   # piso 1 → pasa al 2
+        (22, 5)    # piso 2 → entrega
+    ]
 
-    # Camión
     CAMION_X = 3
     CAMION_Y = 5
 
-    # Velocidades
+    # Velocidades (modificadas por menú)
     VX = 2.5
     VY_CAIDA = 1
+
+    # --------------------------------------------------------------
 
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
         self.x_real = float(x)
         self.y_real = float(y)
 
@@ -60,27 +57,24 @@ class Paquete:
         self.piso = 0
         self.activo = True
 
-    # ---------------- PROPIEDADES ---------------- #
+    # ---------------- PROPIEDADES X/Y ----------------
 
     @property
-    def x(self):
-        return self.__x
-
+    def x(self): return self.__x
     @x.setter
-    def x(self, v):
-        self.__x = int(v)
+    def x(self, v): self.__x = int(v)
 
     @property
-    def y(self):
-        return self.__y
-
+    def y(self): return self.__y
     @y.setter
-    def y(self, v):
-        self.__y = int(v)
+    def y(self, v): self.__y = int(v)
 
-    # ---------------- REINICIO ---------------- #
+    # --------------------------------------------------
+    #   REINICIO
+    # --------------------------------------------------
 
     def reiniciar_salida(self):
+        """Coloca el paquete en el inicio del recorrido."""
         self.estado = "salida"
         self.piso = 0
         self.vx = -self.VX
@@ -91,30 +85,35 @@ class Paquete:
         self.y = self.y_real
         self.activo = True
 
-    # ---------------- UPDATE PRINCIPAL ---------------- #
+    # --------------------------------------------------
+    #   UPDATE PRINCIPAL
+    # --------------------------------------------------
 
     def update(self, mario, luigi, juego):
+
         if not self.activo:
             return
 
-        # =============== CAÍDA POR FALLO ===============
+        # ======================================================
+        #   CAÍDA DE FALLO
+        # ======================================================
         if self.estado == "caida_fallo":
             self.y_real += self.vy
             self.y = self.y_real
 
             if self.y > pyxel.height:
-                # Si el jefe sigue activo → no respawnear aún
                 if juego.jefe_timer > 0:
                     self.activo = False
                 else:
                     self.reiniciar_salida()
             return
 
-        # =============== SALIDA =========================
+        # ======================================================
+        #  ESTADO: SALIDA (32 → 26)
+        # ======================================================
         if self.estado == "salida":
-
             self.piso = 0
-            self.y_real = self.PISOS_Y[self.piso] * 8
+            self.y_real = self.PISOS_Y[0] * 8
             self.y = self.y_real
 
             self.vx = -self.VX
@@ -122,40 +121,42 @@ class Paquete:
             self.x = self.x_real
 
             if self.x <= self.COL_STOP_MARIO * 8:
-
                 if mario.piso != 0:
                     juego.fallos += 1
                     juego.invocar_jefe()
-                    self._iniciar_caida_fallo()
+                    self._fallar()
                     return
 
                 self.estado = "salida_detras_mario"
 
-        # =============== DETRÁS DE MARIO ===============
+        # ======================================================
+        #  DETRÁS DE MARIO
+        # ======================================================
         elif self.estado == "salida_detras_mario":
 
-            self.vx = -self.VX
             self.x_real += self.vx
             self.x = self.x_real
 
-            x_detras_mario = (self.COL_MARIO_X + 1) * 8
+            pos_detras = (self.COL_MARIO_X + 1) * 8
 
-            if self.x <= x_detras_mario:
+            if self.x <= pos_detras:
 
                 if mario.piso != 0:
                     juego.fallos += 1
                     juego.invocar_jefe()
-                    self._iniciar_caida_fallo()
+                    self._fallar()
                     return
 
-                # Teletransporte a la cinta
                 self.x_real = 22 * 8
                 self.y_real = 13 * 8
                 self.x = self.x_real
                 self.y = self.y_real
+
                 self.estado = "a_columna"
 
-        # =============== HACIA LA COLUMNA ===============
+        # ======================================================
+        #  HACIA LA COLUMNA MORADA
+        # ======================================================
         elif self.estado == "a_columna":
 
             # Piso 1 → derecha
@@ -180,11 +181,14 @@ class Paquete:
                     self.x = self.x_real
                     self.estado = "a_destino"
 
-        # =============== DESTINO (FINAL DE CINTA) ===============
+        # ======================================================
+        #   DESTINO FINAL DEL PISO
+        # ======================================================
         elif self.estado == "a_destino":
 
-            # ---------- PISO 1 → hacia Mario -----------
+            # Piso 1 → hacia Mario
             if self.piso == 1:
+
                 self.vx = abs(self.VX)
                 self.x_real += self.vx
                 self.x = self.x_real
@@ -193,19 +197,17 @@ class Paquete:
 
                 if self.x >= final_x:
 
-                    # Si Mario NO está en piso correcto → fallo
                     if mario.piso != 1:
                         juego.fallos += 1
                         juego.invocar_jefe()
-                        self._iniciar_caida_fallo()
+                        self._fallar()
                         return
 
-                    # *** SUBIR AUTOMÁTICAMENTE ***
-                    self.piso += 1
+                    self.piso = 2
                     self._tp_principio_cinta()
                     self.estado = "a_columna"
 
-            # ---------- PISO 0 Y 2 → hacia Luigi ---------
+            # Piso 0 y 2 → hacia Luigi
             else:
                 self.vx = -abs(self.VX)
                 self.x_real += self.vx
@@ -217,29 +219,32 @@ class Paquete:
 
                     # Piso 0 → Luigi debe estar
                     if self.piso == 0:
+
                         if luigi.piso != 0:
                             juego.fallos += 1
                             juego.invocar_jefe()
-                            self._iniciar_caida_fallo()
+                            self._fallar()
                             return
 
-                        # *** SUBIR AUTOMÁTICAMENTE ***
-                        self.piso += 1
+                        self.piso = 1
                         self._tp_principio_cinta()
                         self.estado = "a_columna"
 
-                    # Piso 2 → entrega final
+                    # Piso 2 → entrega
                     else:
+
                         if luigi.piso != 2:
                             juego.fallos += 1
                             juego.invocar_jefe()
-                            self._iniciar_caida_fallo()
+                            self._fallar()
                             return
 
                         self.estado = "entrega"
                         self._tp_sobre_camion()
 
-        # =============== ENTREGA FINAL ===============
+        # ======================================================
+        #   ENTREGA FINAL
+        # ======================================================
         elif self.estado == "entrega":
 
             self.y_real += self.VY_CAIDA
@@ -257,10 +262,11 @@ class Paquete:
 
                 self.reiniciar_salida()
 
-    # ---------------- FUNCIONES AUXILIARES ---------------- #
+    # --------------------------------------------------
+    #   AUXILIARES
+    # --------------------------------------------------
 
     def _tp_principio_cinta(self):
-        """Teletransporta el paquete a la primera posición del piso actual."""
         x_tile, y_tile = self.POS_INICIO_CINTA[self.piso]
         self.x_real = x_tile * 8
         self.y_real = y_tile * 8
@@ -268,21 +274,21 @@ class Paquete:
         self.y = self.y_real
 
     def _tp_sobre_camion(self):
-        """Teletransporta la caja justo encima del camión."""
         self.x_real = self.CAMION_X * 8
         self.y_real = (self.CAMION_Y - 4) * 8
         self.x = self.x_real
         self.y = self.y_real
         self.vy = self.VY_CAIDA
 
-    def _iniciar_caida_fallo(self):
-        """Activa la animación de caída cuando hay un fallo."""
+    def _fallar(self):
         self.estado = "caida_fallo"
         self.vx = 0.0
         self.vy = self.VY_CAIDA
 
+    # --------------------------------------------------
+    #   DRAW
+    # --------------------------------------------------
+
     def draw(self):
-        """Dibuja el paquete si está activo."""
-        if not self.activo:
-            return
-        pyxel.blt(self.x, self.y, *self.sprite_paquete)
+        if self.activo:
+            pyxel.blt(self.x, self.y, *self.sprite_paquete)
