@@ -11,24 +11,21 @@ class Personaje:
     def __init__(self, nombre: str, x: int, y: int):
         """
         Inicializa un personaje con nombre, posición y sprite.
-        Parámetros:
-            nombre: "Mario" o "Luigi"
-            x, y : posición inicial en píxeles
         """
         self.nombre = nombre
 
-        # Usan setters → validación
+        # Usamos los setters para validar que x e y sean correctos
         self.x = x
         self.y = y
 
-        # Sprites de ambos personajes (img, u, v, w, h, colkey)
+        # Definimos los sprites (img, u, v, w, h, colkey)
         self.sprite_luigi = (0, 16, 0, 16, 16, 7)
         self.sprite_mario = (0, 0, 0, 16, 16, 7)
 
-        # Piso actual (0 = abajo)
+        # Piso actual (0 es el piso de más arriba en lógica, o abajo según se mire)
         self.piso = 0
 
-        # Lista con alturas y-coord de cada piso (se asigna desde Juego)
+        # Lista donde guardaremos las coordenadas Y de cada piso
         self.pisos = None
 
     # ==========================================================
@@ -37,11 +34,12 @@ class Personaje:
 
     @property
     def x(self) -> int:
-        """Coordenada X del personaje (en píxeles)."""
+        """Devuelve la coordenada X."""
         return self.__x
 
     @x.setter
     def x(self, value: int):
+        """Asigna la coordenada X comprobando que sea válida."""
         if not isinstance(value, int):
             raise TypeError("La coordenada X debe ser un número entero.")
         if value < 0:
@@ -50,11 +48,12 @@ class Personaje:
 
     @property
     def y(self) -> int:
-        """Coordenada Y del personaje (en píxeles)."""
+        """Devuelve la coordenada Y."""
         return self.__y
 
     @y.setter
     def y(self, value: int):
+        """Asigna la coordenada Y comprobando que sea válida."""
         if not isinstance(value, int):
             raise TypeError("La coordenada Y debe ser un número entero.")
         if value < 0:
@@ -67,24 +66,33 @@ class Personaje:
 
     def mover_arriba(self):
         """
-        Mueve al personaje un piso hacia arriba si no está en el piso superior.
+        Mueve al personaje un piso hacia arriba (visualmente)
+        si no está ya en el límite superior.
         """
+        # Comprobamos que el juego nos haya dado la lista de pisos
         if self.pisos is None:
             raise ValueError("Los pisos no han sido asignados al personaje.")
 
+        # Verificamos si podemos subir más
+        # Nota: Dependiendo de cómo ordenes la lista 'pisos', el índice cambia.
+        # Aquí asumimos que índice mayor = piso superior visualmente o viceversa.
+        # Ajustado a la lógica del juego: índice mayor = subir.
         if self.piso < len(self.pisos) - 1:
-            self.piso += 1
+            self.piso = self.piso + 1
+            # Actualizamos la posición visual Y
             self.y = self.pisos[self.piso]
 
     def mover_abajo(self):
         """
-        Mueve al personaje un piso hacia abajo si no está en el inferior.
+        Mueve al personaje un piso hacia abajo.
         """
         if self.pisos is None:
             raise ValueError("Los pisos no han sido asignados al personaje.")
 
+        # Verificamos si podemos bajar más
         if self.piso > 0:
-            self.piso -= 1
+            self.piso = self.piso - 1
+            # Actualizamos la posición visual Y
             self.y = self.pisos[self.piso]
 
     # ==========================================================
@@ -94,8 +102,8 @@ class Personaje:
     def draw(self):
         """
         Dibuja el sprite correspondiente de Mario o Luigi.
-        Este método se usa desde Juego.draw().
         """
+        # Convertimos el nombre a minúsculas para comparar
         if self.nombre.lower() == "luigi":
             pyxel.blt(self.x, self.y, *self.sprite_luigi)
         else:
