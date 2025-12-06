@@ -1,7 +1,6 @@
-import pyxel
 from Juego import Juego
 
 if __name__ == "__main__":
-    pyxel.init(256, 128,title="Mario Bros")
+    # Instanciamos el juego y llamamos a su nuevo método ejecutar
     juego = Juego()
-    pyxel.run(juego.update, juego.draw)
+    juego.ejecutar()
