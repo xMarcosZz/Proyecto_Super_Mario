@@ -28,9 +28,7 @@ class Personaje:
         # Lista donde guardaremos las coordenadas Y de cada piso
         self.pisos = None
 
-    # ==========================================================
     #  PROPIEDADES X / Y CON VALIDACIÓN
-    # ==========================================================
 
     @property
     def x(self) -> int:
@@ -60,9 +58,7 @@ class Personaje:
             raise ValueError("La coordenada Y debe ser un número no negativo.")
         self.__y = value
 
-    # ==========================================================
     #  MOVIMIENTO ENTRE PISOS
-    # ==========================================================
 
     def mover_arriba(self):
         """
@@ -95,9 +91,6 @@ class Personaje:
             # Actualizamos la posición visual Y
             self.y = self.pisos[self.piso]
 
-    # ==========================================================
-    #  DIBUJADO DEL PERSONAJE
-    # ==========================================================
 
     def draw(self):
         """

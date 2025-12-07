@@ -17,10 +17,6 @@ class Paquete:
     5. "caida_fallo": Cayendo al vacío por un error.
     """
 
-    # =========================================================================
-    # CONSTANTES DE CONFIGURACIÓN
-    # =========================================================================
-
     # Coordenadas Y (altura en píxeles) de los 3 pisos (0, 1, 2)
     # Piso 0 = 13 tiles, Piso 1 = 9 tiles, Piso 2 = 5 tiles
     PISOS_Y = [13, 9, 5]
@@ -67,9 +63,7 @@ class Paquete:
     # Velocidad de caída vertical (gravedad)
     VY_CAIDA = 1
 
-    # =========================================================================
-    # CONSTRUCTOR
-    # =========================================================================
+
     def __init__(self, x: int, y: int):
         """
         Inicializa un nuevo paquete en la posición (x, y).
@@ -95,10 +89,9 @@ class Paquete:
         self.piso = 0
         self.activo = True  # Si False, no se actualiza ni dibuja
 
-    # =========================================================================
+
     # PROPIEDADES (GETTERS / SETTERS)
-    # Aseguran que las coordenadas sean siempre enteros al pedirlas
-    # =========================================================================
+
     @property
     def x(self) -> int:
         return self.__x
@@ -115,9 +108,7 @@ class Paquete:
     def y(self, v):
         self.__y = int(v)
 
-    # =========================================================================
-    # MÉTODOS DE CONTROL
-    # =========================================================================
+
 
     def reiniciar_salida(self):
         """
@@ -172,9 +163,9 @@ class Paquete:
         elif self.estado == "entrega":
             self._update_entrega(juego)
 
-    # =========================================================================
+
     # LÓGICA ESPECÍFICA POR ESTADO (MÉTODOS PRIVADOS)
-    # =========================================================================
+
 
     def _update_caida_fallo(self, juego):
         """Comportamiento: El paquete cae al vacío tras un error."""
@@ -344,9 +335,9 @@ class Paquete:
             # 4. El paquete ha cumplido su misión, vuelve a salir
             self.reiniciar_salida()
 
-    # =========================================================================
+
     # MÉTODOS AUXILIARES
-    # =========================================================================
+
 
     def _registrar_fallo(self, juego):
         """Gestiona las consecuencias de un fallo."""

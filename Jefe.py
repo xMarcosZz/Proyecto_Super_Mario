@@ -30,9 +30,7 @@ class Jefe:
         self.anim_contador = 0
         self.anim_velocidad = 5  # Cambia de pose cada 5 frames
 
-    # --------------------------------------------------
     # PROPIEDADES (Getters y Setters)
-    # --------------------------------------------------
     @property
     def x(self) -> int:
         return self.__x
@@ -49,9 +47,8 @@ class Jefe:
     def y(self, value: int):
         self.__y = int(value)
 
-    # --------------------------------------------------
+
     # VISIBILIDAD
-    # --------------------------------------------------
     def aparecer(self):
         """Hace visible al jefe para regañar."""
         self.visible = True
@@ -61,9 +58,7 @@ class Jefe:
         self.visible = False
         self.frame_index = 0
 
-    # --------------------------------------------------
-    # ACTUALIZACIÓN (Update)
-    # --------------------------------------------------
+
     def update(self):
         """
         Controla la animación del jefe.
@@ -85,9 +80,6 @@ class Jefe:
             else:
                 self.frame_index = 0
 
-    # --------------------------------------------------
-    # DIBUJADO (Draw)
-    # --------------------------------------------------
     def draw(self):
         """Dibuja al jefe en pantalla."""
         if self.visible == False:

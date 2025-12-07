@@ -16,9 +16,7 @@ class GestorSonido:
         """
         Define las notas y efectos en los bancos de memoria de Pyxel.
         """
-        # ------------------------------------------------
-        # EFECTOS DE SONIDO (SFX)
-        # ------------------------------------------------
+        # EFECTOS DE SONIDO
 
         # Sonido 0: Entrega correcta (sonido tipo moneda/agudo)
         # Notas: Do3, Mi3, Sol3, Do4. Tono: Triangle.
@@ -32,9 +30,7 @@ class GestorSonido:
         # Notas: Do3, Sol2, Mi2, Do2. Tono: Square.
         pyxel.sound(2).set("c3g2e2c2", "s", "6", "vffn", 30)
 
-        # ------------------------------------------------
-        # MÚSICA DE FONDO (BGM)
-        # ------------------------------------------------
+        # MÚSICA DE FONDO
 
         # Sonido 10: Melodía principal (Parte A)
         pyxel.sound(10).set(
