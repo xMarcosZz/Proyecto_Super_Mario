@@ -38,7 +38,7 @@ class Juego:
         # Lista con las velocidades disponibles para los paquetes
         self.velocidades = [1.5, 2.0, 2.5, 3.0]
         # Textos para mostrar en el menu segun la velocidad
-        self.velocidades_texto = ["Muy lenta", "Lenta", "Media", "Rápida"]
+        self.velocidades_texto = ["Muy lenta", "Lenta", "Media", "Rapida"]
         # Indice que apunta a la velocidad seleccionada actualmente (2 = Media)
         self.config_vel_index = 2
 
@@ -469,7 +469,7 @@ class Juego:
 
         # 6. Mensajes especiales
         if self.camion.estado == Camion.FUERA:
-            self.hud.draw_mensaje_descanso()
+            self.hud.draw_mensaje_reparto()
 
         if self.game_over:
             # Comprobamos si es un nuevo record para mostrar mensaje especial

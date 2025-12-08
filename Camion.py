@@ -16,6 +16,23 @@ class Camion:
     # Velocidad a la que se mueve el camión
     VELOCIDAD = 1
 
+    #Setters\Getters
+    @property
+    def x(self) -> int:
+        return self.__x
+
+    @x.setter
+    def x(self, value: int):
+        self.__x = int(value)
+
+    @property
+    def y(self) -> int:
+        return self.__y
+
+    @y.setter
+    def y(self, value: int):
+        self.__y = int(value)
+
     def __init__(self, x: int, y: int):
         """Constructor del camión."""
         self.x = x
@@ -62,7 +79,7 @@ class Camion:
                 # Guardamos el frame actual para contar el tiempo
                 self.timer = pyxel.frame_count
 
-        # CASO 2: El camión está fuera (descanso)
+        # CASO 2: El camión está fuera (Reparto)
         elif self.estado == Camion.FUERA:
             # Calculamos cuánto tiempo ha pasado
             tiempo_fuera = pyxel.frame_count - self.timer

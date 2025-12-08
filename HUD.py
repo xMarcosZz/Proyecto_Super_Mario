@@ -13,7 +13,7 @@ class HUD:
         pyxel.cls(0)
 
         # Dibujamos el titulo centrado
-        titulo = "PROYECTO SUPER MARIO"
+        titulo = "Super Mario Packers Lite"
         ancho_titulo = len(titulo) * 4
         x_tit = (pyxel.width - ancho_titulo) // 2
         pyxel.text(x_tit, 30, titulo, 10)
@@ -188,9 +188,9 @@ class HUD:
             pos_y_opcion = y_opciones + (i * 10)
             pyxel.text(x_caja + 20, pos_y_opcion, prefix + txt, color)
 
-    def draw_mensaje_descanso(self):
+    def draw_mensaje_reparto(self):
         # Mensaje cuando el camion esta fuera
-        msg = "DESCANSO..."
+        msg = "EN REPARTO..."
         ancho_msg = len(msg) * 4
 
         cx = pyxel.width // 2
